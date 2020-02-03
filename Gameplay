@@ -1,0 +1,853 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package tron;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.FileReader;
+import java.util.Random;
+import java.util.Scanner;
+import javax.swing.*;
+
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.PreparedStatement;
+import com.mysql.jdbc.Statement;
+
+import tron.Alap;
+
+/**
+ *
+ * @author Hafi
+ */
+public class Gameplay extends JPanel implements KeyListener, ActionListener{
+    
+    private int[] bikeX1 = new int[750];
+    private int[] bikeY1 = new int[750];
+    
+    private int[] bikeX2 = new int[750];
+    private int[] bikeY2 = new int[750];
+    
+    private boolean left1 = false;
+    private boolean right1 = false;
+    private boolean up1 = false;
+    private boolean down1 = false;
+    
+    private boolean left2 = false;
+    private boolean right2 = false;
+    private boolean up2 = false;
+    private boolean down2 = false;
+    
+    private boolean vege1 = false;
+    private boolean vege2 = false;
+    
+    private ImageIcon rightmouth;
+    private ImageIcon leftmouth;
+    private ImageIcon upmouth;
+    private ImageIcon downmouth;
+    
+    private int length = 1;
+    int sok = 0;
+    boolean eleje = true;
+    
+    
+    private Timer timer;
+    private int delay = 50;
+    private ImageIcon snakeImage;
+    
+    private ImageIcon enemyimage;
+    
+    private int player1score = 0;
+    private int player2score = 0;
+    
+    private int moves = 0;
+    
+    private ImageIcon titleImage;
+    
+    String nev1;
+    String nev2;
+    
+    String szin1;
+    String szin2;
+    
+    
+    public Gameplay(){
+        addKeyListener(this);
+        setFocusable(true);
+        setFocusTraversalKeysEnabled(false);
+        timer = new Timer(delay, this);
+        timer.start();
+    }
+    
+    public void Beolvas(){
+        try {
+            FileReader fr1 = new FileReader("player1.txt");
+            Scanner olvaso1 = new Scanner(fr1);
+            String sor1 = olvaso1.nextLine();
+            String[] sp = sor1.split(" ");
+            szin1 = sp[0];
+            nev1 = sp[1];
+            
+            
+            FileReader fr2 = new FileReader("player2.txt");
+            Scanner olvaso2 = new Scanner(fr2);
+            String sor2 = olvaso2.nextLine();
+            String[] sp2 = sor2.split(" ");
+            szin2 = sp2[0];
+            nev2 = sp2[1];
+            
+        } catch (Exception e) {
+            System.out.println("hiba");
+        }
+        
+    }
+    
+    
+    public void IrasAdatb(String neve, int pont){
+        try {
+		  Connection conn =
+		  (Connection) DriverManager.getConnection("jdbc:mysql://localhost/tron2","root","");
+		  Statement stat=(Statement) conn.createStatement();
+		  ResultSet res=stat.executeQuery("Select * FROM motor");
+		  //System.out.println(res)
+                  boolean vane = false;
+		  while(res.next()){
+                            if(res.getString("Nev").equals(neve)){
+                                vane = true;
+                            }
+				
+                    }
+                  if(vane){
+                    String query = "update motor set Score= "+pont+" where Nev = '"+neve+"'";
+                    stat.executeUpdate(query);
+                  }
+                  else{
+                    String adat = "INSERT INTO motor (Nev, Score)" + "VALUES ('"+ neve +"', "+pont+")";
+                    System.out.println(adat);
+                    stat.executeUpdate(adat);
+                  }
+                  
+                
+
+        }catch (SQLException e) {
+            System.out.println("Kapcsolódási hiba");
+            e.printStackTrace();
+	}
+    }
+    public void vege(Graphics g){
+        for(int b = 1; b < length; b++)
+        {
+            if(bikeX1[b] == bikeX1[0] && bikeY1[b] == bikeY1[0] || bikeX1[0] == bikeX2[b] && bikeY1[0] == bikeY2[b] || vege1)
+            {
+                if(sok == 0){
+                    right1 = false;
+                    left1 = false;
+                    up1 = false;
+                    down1 = false;
+                    
+                    
+                    right2 = false;
+                    left2 = false;
+                    up2 = false;
+                    down2 = false;
+                    player2score = player2score + 1;
+                    IrasAdatb(nev2,player2score);
+
+
+                    g.setColor(Color.red);
+                    g.setFont(new Font("arial", Font.BOLD,50));
+                    g.drawString("Győzött a "+nev2, 300, 300);
+
+                    g.setFont(new Font("arial", Font.BOLD,20));
+                    g.drawString("Enter to Restart!", 350, 340);
+                    b = length;
+                    sok++;
+                    vege2 = true; 
+                }
+                
+            }
+            
+            if(bikeX2[b] == bikeX2[0] && bikeY2[b] == bikeY2[0] || bikeX2[0] == bikeX1[b] && bikeY2[0] == bikeY1[b] || vege2)
+            {
+                if(sok == 0){
+                    right1 = false;
+                    left1 = false;
+                    up1 = false;
+                    down1 = false;
+                    
+                    
+                    
+                    right2 = false;
+                    left2 = false;
+                    up2 = false;
+                    down2 = false;
+
+                    player1score = player1score + 1;
+                    IrasAdatb(nev1,player1score);
+                    g.setColor(Color.red);
+                    g.setFont(new Font("arial", Font.BOLD,50));
+                    g.drawString("Győzött a "+nev1, 300, 300);
+
+                    g.setFont(new Font("arial", Font.BOLD,20));
+                    g.drawString("Enter to Restart!", 350, 340);
+                    b = length;
+                    sok++;
+                    vege1 = true;
+                }
+            }
+            
+        }
+    }
+    
+    public void paint(Graphics g){
+        Beolvas();
+        if(moves == 0)
+        {
+            
+           bikeX1[0] = 25;
+           bikeY1[0] = 100;
+           
+           
+           bikeX2[0] = 850;
+           bikeY2[0] = 600;
+           
+        }
+        
+        //draw title image border
+        g.setColor(Color.white);
+        g.drawRect(24, 10, 851, 55);
+        
+        //draw the title image
+        titleImage = new ImageIcon("title.jpg");
+        titleImage.paintIcon(this, g, 25, 11);
+        
+        //draw border for gamplay
+        g.setColor(Color.WHITE);
+        g.drawRect(24, 74, 851, 577);
+        
+        //draw background for the gameplay
+        g.setColor(Color.black);
+        g.fillRect(25, 74, 850, 575);
+        
+        //draw score
+        g.setColor(Color.white);
+        g.setFont(new Font("arial", Font.PLAIN,14));
+        g.drawString(nev1 + " Score: " + player1score, 750, 30);
+        
+        //draw length
+        g.setColor(Color.white);
+        g.setFont(new Font("arial", Font.PLAIN,14));
+        g.drawString(nev2 + " Score: " + player2score, 750, 50);
+        
+        if(szin1.equals("feher")){
+            rightmouth = new ImageIcon("fej1.png");
+            rightmouth.paintIcon(this, g, bikeX1[0], bikeY1[0]);
+        }
+        if(szin2.equals("feher")){
+            rightmouth = new ImageIcon("fej1.png");
+            rightmouth.paintIcon(this, g, bikeX2[0], bikeY2[0]);
+        }
+        
+        if(szin1.equals("piros")){
+            rightmouth = new ImageIcon("pirosfej.png");
+            rightmouth.paintIcon(this, g, bikeX1[0], bikeY1[0]);
+        }
+        if(szin2.equals("piros")){
+            rightmouth = new ImageIcon("pirosfej.png");
+            rightmouth.paintIcon(this, g, bikeX2[0], bikeY2[0]);
+        }
+        
+        if(szin1.equals("kek")){
+            rightmouth = new ImageIcon("kekfej.png");
+            rightmouth.paintIcon(this, g, bikeX1[0], bikeY1[0]);
+        }
+        if(szin2.equals("kek")){
+            rightmouth = new ImageIcon("kekfej.png");
+            rightmouth.paintIcon(this, g, bikeX2[0], bikeY2[0]);
+        }
+        
+        if(szin1.equals("zold")){
+            rightmouth = new ImageIcon("zoldfej.png");
+            rightmouth.paintIcon(this, g, bikeX1[0], bikeY1[0]);
+        }
+        if(szin2.equals("zold")){
+            rightmouth = new ImageIcon("zoldfej.png");
+            rightmouth.paintIcon(this, g, bikeX2[0], bikeY2[0]);
+        }
+        
+        
+        
+        
+        
+        
+        int a = 0;
+        while( a!= length)
+        {
+            
+            if(a ==0 && szin1.equals("feher"))
+            {
+                rightmouth = new ImageIcon("fej1.png");
+                rightmouth.paintIcon(this, g, bikeX1[a], bikeY1[a]);
+            }
+            
+            if(a ==0 && szin2.equals("feher"))
+            {
+                rightmouth = new ImageIcon("fej1.png");
+                rightmouth.paintIcon(this, g, bikeX2[a], bikeY2[a]);
+            }
+            
+            if(a ==0 && szin1.equals("piros"))
+            {
+                leftmouth = new ImageIcon("pirosfej.png");
+                leftmouth.paintIcon(this, g, bikeX1[a], bikeY1[a]);
+            }
+            
+            if(a ==0 && szin2.equals("piros"))
+            {
+                leftmouth = new ImageIcon("pirosfej.png");
+                leftmouth.paintIcon(this, g, bikeX2[a], bikeY2[a]);
+            }
+            
+            if(a ==0 && szin1.equals("kek"))
+            {
+                leftmouth = new ImageIcon("kekfej.png");
+                leftmouth.paintIcon(this, g, bikeX1[a], bikeY1[a]);
+            }
+            
+            if(a ==0 && szin2.equals("kek"))
+            {
+                leftmouth = new ImageIcon("kekfej.png");
+                leftmouth.paintIcon(this, g, bikeX2[a], bikeY2[a]);
+            }
+            
+            if(a ==0 && szin1.equals("zold"))
+            {
+                leftmouth = new ImageIcon("zoldfej.png");
+                leftmouth.paintIcon(this, g, bikeX1[a], bikeY1[a]);
+            }
+            
+            if(a ==0 && szin2.equals("zold"))
+            {
+                leftmouth = new ImageIcon("zoldfej.png");
+                leftmouth.paintIcon(this, g, bikeX2[a], bikeY2[a]);
+            }
+            
+            
+            //Vonalak
+            
+            if(a != 0 && szin1.equals("feher"))
+            {
+                snakeImage = new ImageIcon("vonalle.png");
+                snakeImage.paintIcon(this, g, bikeX1[a], bikeY1[a]);
+            }
+            
+            if(a != 0 && szin2.equals("feher"))
+            {
+                snakeImage = new ImageIcon("vonalle.png");
+                snakeImage.paintIcon(this, g, bikeX2[a], bikeY2[a]);
+            }
+            
+            
+            if(a != 0 && szin1.equals("piros"))
+            {
+                snakeImage = new ImageIcon("pirosvonal.png");
+                snakeImage.paintIcon(this, g, bikeX1[a], bikeY1[a]);
+            }
+            
+            if(a != 0 && szin2.equals("piros"))
+            {
+                snakeImage = new ImageIcon("pirosvonal.png");
+                snakeImage.paintIcon(this, g, bikeX2[a], bikeY2[a]);
+            }
+            
+            if(a != 0 && szin1.equals("kek"))
+            {
+                snakeImage = new ImageIcon("kekvonal.png");
+                snakeImage.paintIcon(this, g, bikeX1[a], bikeY1[a]);
+            }
+            
+            if(a != 0 && szin2.equals("kek"))
+            {
+                snakeImage = new ImageIcon("kekvonal.png");
+                snakeImage.paintIcon(this, g, bikeX2[a], bikeY2[a]);
+            }
+            
+            if(a != 0 && szin1.equals("zold"))
+            {
+                snakeImage = new ImageIcon("zoldvonal.png");
+                snakeImage.paintIcon(this, g, bikeX1[a], bikeY1[a]);
+            }
+            
+            if(a != 0 && szin2.equals("zold"))
+            {
+                snakeImage = new ImageIcon("zoldvonal.png");
+                snakeImage.paintIcon(this, g, bikeX2[a], bikeY2[a]);
+            }
+            
+            
+            a++;
+        }
+        
+        vege(g);
+        
+        g.dispose();
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        
+        if(e.getKeyCode() == KeyEvent.VK_ENTER)
+        {
+            moves = 0;
+            length = 1;
+            sok = 0;
+            eleje = true;
+            
+            right1 = false;
+            left1 = false;
+            up1 = false;
+            down1 = false;
+                
+            right2 = false;
+            left2 = false;
+            up2 = false;
+            down2 = false;
+            
+            vege1 = false;
+            vege2 = false;
+            
+            repaint();
+        }
+        
+        if(e.getKeyCode() == KeyEvent.VK_SPACE)
+        {
+            if(vege1 == false && vege2 == false){
+                eleje = false;
+                moves++;
+                
+                right1 = true;
+                if(!left1)
+                {
+                    right1 = true;
+                }
+                else
+                {
+                    right1 = false;
+                    left1 = true;
+                }
+
+                up1 = false;
+                down1 = false;
+
+                left2 = true;
+                if(!right2)
+                {
+                    left2 = true;
+                }
+                else
+                {
+                    left2 = false;
+                    right2 = true;
+                }
+
+                up2 = false;
+                down2 = false;
+            }
+            
+        }
+        
+        //Első Pleyer
+        
+        if(e.getKeyCode() == KeyEvent.VK_D)
+        {
+            if(vege1 == false && vege2 == false && eleje == false){
+                moves++;
+                right1 = true;
+                if(!left1)
+                {
+                    right1 = true;
+                }
+                else
+                {
+                    right1 = false;
+                    left1 = true;
+                }
+
+                up1 = false;
+                down1 = false;
+            }
+            
+        }
+        
+        if(e.getKeyCode() == KeyEvent.VK_A && eleje == false)
+        {
+            if(vege1 == false && vege2 == false){
+                moves++;
+                left1 = true;
+                if(!right1)
+                {
+                    left1 = true;
+                }
+                else
+                {
+                    left1 = false;
+                    right1 = true;
+                }
+
+                up1 = false;
+                down1 = false;
+            }
+            
+        }
+        
+        if(e.getKeyCode() == KeyEvent.VK_W && eleje == false)
+        {
+            if(vege1 == false && vege2 == false){
+                moves++;
+                up1 = true;
+                if(!down1)
+                {
+                    up1 = true;
+                }
+                else
+                {
+                    up1 = false;
+                    down1 = true;
+                }
+
+                right1 = false;
+                left1 = false;
+            }
+            
+        }
+        
+        if(e.getKeyCode() == KeyEvent.VK_S && eleje == false)
+        {
+            if(vege1 == false && vege2 == false){
+                moves++;
+                down1 = true;
+                if(!up1)
+                {
+                    down1 = true;
+                }
+                else
+                {
+                    down1 = false;
+                    up1 = true;
+                }
+
+                right1 = false;
+                left1 = false;
+            }
+            
+        }
+        
+        //Másidik Player
+        
+        
+        
+        
+        if(e.getKeyCode() == KeyEvent.VK_RIGHT && eleje == false)
+        {
+            if(vege1 == false && vege2 == false){
+                moves++;
+                right2 = true;
+                if(!left2)
+                {
+                    right2 = true;
+                }
+                else
+                {
+                    right2 = false;
+                    left2 = true;
+                }
+
+                up2 = false;
+                down2 = false;
+            }
+            
+        }
+        
+        if(e.getKeyCode() == KeyEvent.VK_LEFT && eleje == false)
+        {
+            if(vege1 == false && vege2 == false){
+                moves++;
+                left2 = true;
+                if(!right2)
+                {
+                    left2 = true;
+                }
+                else
+                {
+                    left2 = false;
+                    right2 = true;
+                }
+
+                up2 = false;
+                down2 = false;
+            }
+            
+        }
+        
+        if(e.getKeyCode() == KeyEvent.VK_UP && eleje == false)
+        {
+            if(vege1 == false && vege2 == false){
+                moves++;
+               up2 = true;
+               if(!down2)
+               {
+                   up2 = true;
+               }
+               else
+               {
+                   up2 = false;
+                   down2 = true;
+               }
+
+               right2 = false;
+               left2 = false;
+            }
+           
+        }
+        
+        if(e.getKeyCode() == KeyEvent.VK_DOWN && eleje == false)
+        {
+            if(vege1 == false && vege2 == false){
+                moves++;
+                down2 = true;
+                if(!up2)
+                {
+                    down2 = true;
+                }
+                else
+                {
+                    down2 = false;
+                    up2 = true;
+                }
+
+                right2 = false;
+                left2 = false;
+            }
+            
+        }
+        
+           
+        
+        
+    }
+    
+    
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        timer.start();
+        
+        //Első Player
+        
+        if(right1)
+        {
+            length++;
+            for(int r = length-1; r >= 0; r--){
+                bikeY1[r+1] = bikeY1[r];
+            }
+            for(int r = length-1; r >= 0; r--){
+                if(r == 0)
+                {
+                    bikeX1[r] = bikeX1[r] + 25;
+                }
+                else
+                {
+                    bikeX1[r] = bikeX1[r-1];
+                }
+                if(bikeX1[r] > 850)
+                {
+                    vege1 = true;
+                    
+                }
+            }
+            repaint();
+            
+        }
+        
+        if(left1)
+        {
+            length++;
+            for(int r = length-1; r >= 0; r--){
+                bikeY1[r+1] = bikeY1[r];
+            }
+            for(int r = length-1; r >= 0; r--){
+                if(r == 0)
+                {
+                    bikeX1[r] = bikeX1[r] - 25;
+                }
+                else
+                {
+                    bikeX1[r] = bikeX1[r-1];
+                }
+                if(bikeX1[r] < 25)
+                {
+                    vege1 = true;
+                }
+            }
+            repaint();
+        }
+        
+        if(up1)
+        {
+            length++;
+            for(int r = length-1; r >= 0; r--){
+                bikeX1[r+1] = bikeX1[r];
+            }
+            for(int r = length-1; r >= 0; r--){
+                if(r == 0)
+                {
+                    bikeY1[r] = bikeY1[r] - 25;
+                }
+                else
+                {
+                    bikeY1[r] = bikeY1[r-1];
+                }
+                if(bikeY1[r] < 75)
+                {
+                    vege1 = true;
+                }
+            }
+            repaint();
+        
+        }
+        if(down1)
+        {
+            length++;
+            for(int r = length-1; r >= 0; r--){
+                bikeX1[r+1] = bikeX1[r];
+            }
+            for(int r = length-1; r >= 0; r--){
+                if(r == 0)
+                {
+                    bikeY1[r] = bikeY1[r] + 25;
+                }
+                else
+                {
+                    bikeY1[r] = bikeY1[r-1];
+                }
+                if(bikeY1[r] > 625)
+                {
+                    vege1 = true;
+                }
+            }
+            repaint();
+        }
+        
+        //Második Player
+        
+        
+        if(right2)
+        {
+            for(int r = length-1; r >= 0; r--){
+                bikeY2[r+1] = bikeY2[r];
+            }
+            for(int r = length-1; r >= 0; r--){
+                if(r == 0)
+                {
+                    bikeX2[r] = bikeX2[r] + 25;
+                }
+                else
+                {
+                    bikeX2[r] = bikeX2[r-1];
+                }
+                if(bikeX2[r] > 850)
+                {
+                    vege2 = true;
+                    
+                }
+            }
+            repaint();
+            
+        }
+        
+        if(left2)
+        {
+            for(int r = length-1; r >= 0; r--){
+                bikeY2[r+1] = bikeY2[r];
+            }
+            for(int r = length-1; r >= 0; r--){
+                if(r == 0)
+                {
+                    bikeX2[r] = bikeX2[r] - 25;
+                }
+                else
+                {
+                    bikeX2[r] = bikeX2[r-1];
+                }
+                if(bikeX2[r] < 25)
+                {
+                    vege2 = true;
+                }
+            }
+            repaint();
+        }
+        
+        if(up2)
+        {
+            for(int r = length-1; r >= 0; r--){
+                bikeX2[r+1] = bikeX2[r];
+            }
+            for(int r = length-1; r >= 0; r--){
+                if(r == 0)
+                {
+                    bikeY2[r] = bikeY2[r] - 25;
+                }
+                else
+                {
+                    bikeY2[r] = bikeY2[r-1];
+                }
+                if(bikeY2[r] < 75)
+                {
+                    vege2 = true;
+                }
+            }
+            repaint();
+        
+        }
+        if(down2)
+        {
+            for(int r = length-1; r >= 0; r--){
+                bikeX2[r+1] = bikeX2[r];
+            }
+            for(int r = length-1; r >= 0; r--){
+                if(r == 0)
+                {
+                    bikeY2[r] = bikeY2[r] + 25;
+                }
+                else
+                {
+                    bikeY2[r] = bikeY2[r-1];
+                }
+                if(bikeY2[r] > 600)
+                {
+                    vege2 = true;
+                }
+            }
+            repaint();
+        }
+        
+    }
+}
