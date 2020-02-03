@@ -1,6 +1,6 @@
 # Tron-Game
 
-A játék a Space lenyomásával indul el. A játék xampp adatbázist tartalmaz.
+A játék a Space lenyomásával indul el. A játék xampp adatbázist tartalmaz. A Word fájl tartalmazza a program dokumentációját.
 
 Két játékos játszik egymás ellen egy-egy olyan motorral, amely fénycsíkot
 húz maga mögött a képernyőn. A motor minden másodpercben a legutoljára beállított
